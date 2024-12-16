@@ -42,7 +42,6 @@ class Car:
         self.angle %= 360
 
     def update(self, screen_width, screen_height):
-        """Update car's position based on its speed and angle."""
         # Convert angle to radians
         rad_angle = math.radians(self.angle)
 
@@ -65,7 +64,6 @@ class Car:
             self.position.y -= screen_height
 
     def draw(self, screen):
-        """Draw the car with its correct rotation."""
         # Rotate the surface by the car's angle
         rotated_surface = pygame.transform.rotate(self.surface, -self.angle)
         rotated_rect = rotated_surface.get_rect(center=(self.position.x, self.position.y))
