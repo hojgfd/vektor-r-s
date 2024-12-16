@@ -2,16 +2,15 @@ import pygame
 from pygame.math import Vector2
 import math
 
-
 class Car:
     def __init__(self, position, image_path, max_speed, acceleration, deceleration, turn_speed, scale):
-        self.position = Vector2(position)  # Current position of the car
-        self.max_speed = max_speed  # Max speed of the car
-        self.acceleration = acceleration  # Rate of acceleration
-        self.deceleration = deceleration  # Rate of slowing down
-        self.turn_speed = turn_speed  # Speed at which the car can turn
-        self.speed = 0  # Current velocity of the car
-        self.angle = 90  # Initial facing direction set to point upwards (90°)
+        self.position = Vector2(position)
+        self.max_speed = max_speed
+        self.acceleration = acceleration
+        self.deceleration = deceleration
+        self.turn_speed = turn_speed
+        self.speed = 0
+        self.angle = 90
 
         # Load and scale the car image
         self.original_surface = pygame.image.load(image_path).convert_alpha()
@@ -19,11 +18,10 @@ class Car:
         self.surface = pygame.transform.smoothscale(self.original_surface, scaled_size)
 
     def handle_input(self, keys):
-        """Handle forward, backward, and turning input."""
         # Handle forward/backward acceleration
-        if keys[pygame.K_UP]:  # Accelerate forward
+        if keys[pygame.K_UP]:
             self.speed = min(self.speed + self.acceleration, self.max_speed)
-        elif keys[pygame.K_DOWN]:  # Accelerate backward
+        elif keys[pygame.K_DOWN]:
             self.speed = max(self.speed - self.deceleration, -self.max_speed / 2)
         else:
             # Gradually decelerate if no key is pressed
@@ -33,9 +31,9 @@ class Car:
                 self.speed = min(self.speed + self.deceleration, 0)
 
         # Handle turning left/right
-        if keys[pygame.K_LEFT]:  # Turn left
+        if keys[pygame.K_LEFT]:
             self.angle -= self.turn_speed
-        if keys[pygame.K_RIGHT]:  # Turn right
+        if keys[pygame.K_RIGHT]:
             self.angle += self.turn_speed
 
         # Normalize the angle to ensure it doesn't grow indefinitely

@@ -14,9 +14,6 @@ pygame.display.set_caption("SIUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU
 clock = pygame.time.Clock()
 FPS = 60
 
-# Define colors
-WHITE = (255, 255, 255)  # Set white color
-
 # Load the track image (background) and scale it to skærmstørrelsen
 try:
     track_image = pygame.image.load("images/Track.png").convert()
@@ -26,15 +23,7 @@ except pygame.error as e:
     sys.exit()
 
 # Create a car instance
-car = Car(
-    position=(WIDTH // 2, HEIGHT // 2),
-    image_path= "images/Car.png",
-    max_speed=5,
-    acceleration=0.2,
-    deceleration=0.1,
-    turn_speed=3,
-    scale=7,
-)
+car = Car(position=(WIDTH // 2, HEIGHT // 2),image_path= "images/Car.png",max_speed=5,acceleration=0.2,deceleration=0.1,turn_speed=3,scale=7,)
 
 # Main game loop
 running = True
@@ -48,10 +37,7 @@ while running:
     car.handle_input(keys)
 
     # Update car
-    car.update(WIDTH, HEIGHT)  # Pass screen size here
-
-    # Clear the screen
-    screen.fill(WHITE)
+    car.update(WIDTH, HEIGHT)
 
     # Draw the track (background) - nu skaleret til skærmstørrelsen
     screen.blit(track_surface, (0, 0))
