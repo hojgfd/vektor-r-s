@@ -5,35 +5,89 @@ from pygame.math import Vector2
 # Initialize Pygame
 pygame.init()
 
-# Screen dimensions
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+# Screen dimensions (Fullscreen)
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+WIDTH, HEIGHT = screen.get_size()
 pygame.display.set_caption("Racing Game")
 
 # Colors
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
 
 # Clock
 clock = pygame.time.Clock()
 FPS = 60
 
-# Car attributes
-CAR_WIDTH, CAR_HEIGHT = 50, 30
-car_pos = Vector2(WIDTH // 2, HEIGHT // 2)
-car_velocity = Vector2(0, 0)
-car_direction = Vector2(1, 0)  # Initial direction (pointing right)
-car_speed = 0
-max_speed = 5
-acceleration = 0.2
-deceleration = 0.1
-turn_speed = 3
 
-# Car surface (for rotation)
-car_surface = pygame.Surface((CAR_WIDTH, CAR_HEIGHT), pygame.SRCALPHA)
-car_surface.fill(RED)
-car_rect = car_surface.get_rect(center=(car_pos.x, car_pos.y))
+class Car:
+    def __init__(self, position, image_path, max_speed, acceleration, deceleration, turn_speed, scale):
+        self.position = Vector2(position)
+        self.max_speed = max_speed
+        self.acceleration = acceleration
+        self.deceleration = deceleration
+        self.turn_speed = turn_speed
+
+        self.speed = 0
+        self.direction = Vector2(1, 0)  # Initial direction (pointing right)
+
+        # Load and scale car image
+        self.original_surface = pygame.image.load(image_path).convert_alpha()
+        scaled_size = (int(self.original_surface.get_width() / scale), int(self.original_surface.get_height() / scale))
+        self.surface = pygame.transform.smoothscale(self.original_surface, scaled_size)
+        self.rect = self.surface.get_rect(center=(self.position.x, self.position.y))
+
+    def handle_input(self, keys):
+        # Accelerate and decelerate
+        if keys[pygame.K_UP]:
+            self.speed = min(self.speed + self.acceleration, self.max_speed)
+        elif keys[pygame.K_DOWN]:
+            self.speed = max(self.speed - self.deceleration, -self.max_speed / 2)  # Reverse speed is slower
+        else:
+            # Gradual slowdown when no key is pressed
+            if self.speed > 0:
+                self.speed = max(self.speed - self.deceleration, 0)
+            elif self.speed < 0:
+                self.speed = min(self.speed + self.deceleration, 0)
+
+        # Turn the car
+        if keys[pygame.K_LEFT]:
+            self.direction = self.direction.rotate(-self.turn_speed)
+        if keys[pygame.K_RIGHT]:
+            self.direction = self.direction.rotate(self.turn_speed)
+
+    def update(self):
+        # Update velocity and position
+        velocity = self.direction * self.speed
+        self.position += velocity
+
+        # Keep the car on the screen
+        if self.position.x < 0:
+            self.position.x = WIDTH
+        elif self.position.x > WIDTH:
+            self.position.x = 0
+
+        if self.position.y < 0:
+            self.position.y = HEIGHT
+        elif self.position.y > HEIGHT:
+            self.position.y = 0
+
+    def draw(self, screen):
+        # Rotate the car surface based on direction
+        angle = self.direction.angle_to(Vector2(1, 0))
+        rotated_surface = pygame.transform.rotate(self.surface, -angle)
+        self.rect = rotated_surface.get_rect(center=(self.position.x, self.position.y))
+        screen.blit(rotated_surface, self.rect.topleft)
+
+
+# Create a car instance
+car = Car(
+    position=(WIDTH // 2, HEIGHT // 2),
+    image_path="images/Car.png",
+    max_speed=5,
+    acceleration=0.2,
+    deceleration=0.1,
+    turn_speed=3,
+    scale=7
+)
 
 # Main game loop
 running = True
@@ -44,47 +98,16 @@ while running:
 
     # Key press handling
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP]:
-        car_speed = min(car_speed + acceleration, max_speed)
-    elif keys[pygame.K_DOWN]:
-        car_speed = max(car_speed - deceleration, -max_speed / 2)  # Reverse speed is slower
-    else:
-        # Gradual slowdown when no key is pressed
-        if car_speed > 0:
-            car_speed = max(car_speed - deceleration, 0)
-        elif car_speed < 0:
-            car_speed = min(car_speed + deceleration, 0)
+    car.handle_input(keys)
 
-    if keys[pygame.K_LEFT]:
-        car_direction = car_direction.rotate(-turn_speed)
-    if keys[pygame.K_RIGHT]:
-        car_direction = car_direction.rotate(turn_speed)
-
-    # Update car velocity and position
-    car_velocity = car_direction * car_speed
-    car_pos += car_velocity
-
-    # Keep the car on the screen
-    if car_pos.x < 0:
-        car_pos.x = WIDTH
-    elif car_pos.x > WIDTH:
-        car_pos.x = 0
-
-    if car_pos.y < 0:
-        car_pos.y = HEIGHT
-    elif car_pos.y > HEIGHT:
-        car_pos.y = 0
+    # Update car
+    car.update()
 
     # Clear the screen
     screen.fill(WHITE)
 
-    # Rotate car surface based on direction
-    angle = car_direction.angle_to(Vector2(1, 0))
-    rotated_car = pygame.transform.rotate(car_surface, -angle)
-    car_rect = rotated_car.get_rect(center=(car_pos.x, car_pos.y))
-
     # Draw the car
-    screen.blit(rotated_car, car_rect.topleft)
+    car.draw(screen)
 
     # Update the display
     pygame.display.flip()
